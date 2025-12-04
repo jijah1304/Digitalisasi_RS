@@ -56,15 +56,18 @@
             <!-- Info User (Nama & Role) -->
             <div class="text-right hidden sm:block leading-tight">
                 <div class="text-sm font-bold text-rs-navy">{{ Auth::user()->name }}</div>
-                <div class="text-xs text-rs-teal font-medium uppercase tracking-wider">{{ Auth::user()->role }}</div>
+                <!-- Link Edit Profil -->
+                <a href="{{ route('profile.edit') }}" class="text-xs text-rs-teal hover:underline font-medium uppercase tracking-wider block" title="Edit Profil">
+                    Edit Profil
+                </a>
             </div>
             
-            <!-- Avatar -->
-            <div class="w-10 h-10 rounded-full bg-rs-pale border-2 border-white shadow-sm overflow-hidden shrink-0">
+            <!-- Avatar (Klik untuk ke Profil) -->
+            <a href="{{ route('profile.edit') }}" class="w-10 h-10 rounded-full bg-rs-pale border-2 border-white shadow-sm overflow-hidden shrink-0 block hover:ring-2 hover:ring-rs-green transition-all" title="Edit Profil">
                 <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=366b2b&color=fff&size=128" 
                      alt="Avatar {{ Auth::user()->name }}" 
                      class="w-full h-full object-cover">
-            </div>
+            </a>
 
             <!-- Tombol Logout -->
             <form method="POST" action="{{ route('logout') }}" class="ml-1">
