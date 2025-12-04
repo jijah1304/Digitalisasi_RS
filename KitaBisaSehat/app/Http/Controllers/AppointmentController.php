@@ -5,22 +5,23 @@ namespace App\Http\Controllers;
 use App\Models\Appointment;
 use App\Models\Poli;
 use App\Models\User;
-use App\Models\Schedule;
+use App\Models\Schedule; // Pastikan Model Schedule di-import
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon; // Pastikan Carbon di-import untuk manipulasi tanggal
 
 class AppointmentController extends Controller
 {
     // === FITUR PASIEN ===
 
-    // 1. Form Buat Janji (Pasien) [cite: 64]
+    // 1. Form Buat Janji (Pasien)
     public function create()
     {
         $polis = Poli::all();
         return view('patient.appointments.create', compact('polis'));
     }
 
-    // API Kecil untuk mendapatkan Dokter berdasarkan Poli (dipanggil via AJAX/JS nanti)
+    // API Kecil untuk mendapatkan Dokter berdasarkan Poli
     public function getDoctorsByPoli($poli_id)
     {
         $doctors = User::where('role', 'dokter')->where('poli_id', $poli_id)->get();
@@ -44,13 +45,42 @@ class AppointmentController extends Controller
             'complaint' => 'required',
         ]);
 
+        // --- VALIDASI HARI PRAKTIK (LOGIKA BARU) ---
+        
+        // 1. Ambil data jadwal yang dipilih user
+        $schedule = Schedule::findOrFail($request->schedule_id);
+
+        // 2. Ambil nama hari dari tanggal yang dipilih (Format Inggris: Monday, Tuesday...)
+        $selectedDayEnglish = Carbon::parse($request->date)->format('l');
+
+        // 3. Mapping Hari Inggris ke Indonesia (Sesuai Database)
+        $dayMap = [
+            'Sunday' => 'Minggu',
+            'Monday' => 'Senin',
+            'Tuesday' => 'Selasa',
+            'Wednesday' => 'Rabu',
+            'Thursday' => 'Kamis',
+            'Friday' => 'Jumat',
+            'Saturday' => 'Sabtu',
+        ];
+        
+        $translatedDay = $dayMap[$selectedDayEnglish] ?? '';
+
+        // 4. Bandingkan: Jika hari tanggal beda dengan hari jadwal, tolak!
+        if ($translatedDay !== $schedule->day) {
+            return back()
+                ->withInput() // Kembalikan inputan user agar tidak mengetik ulang
+                ->withErrors(['date' => "Dokter ini hanya praktik pada hari {$schedule->day}, sedangkan tanggal yang Anda pilih adalah hari $translatedDay."]);
+        }
+        // -------------------------------------------
+
         Appointment::create([
             'patient_id' => Auth::id(),
             'doctor_id' => $request->doctor_id,
             'schedule_id' => $request->schedule_id,
             'date' => $request->date,
             'complaint' => $request->complaint,
-            'status' => 'pending' // Default pending [cite: 70]
+            'status' => 'pending' // Default pending
         ]);
 
         return redirect()->route('dashboard')->with('success', 'Janji temu berhasil dibuat, mohon tunggu konfirmasi.');
@@ -58,7 +88,7 @@ class AppointmentController extends Controller
 
     // === FITUR DOKTER & ADMIN (APPROVAL) ===
 
-    // 3. Daftar Janji Temu Masuk (Untuk Admin & Dokter) [cite: 75, 77]
+    // 3. Daftar Janji Temu Masuk
     public function index()
     {
         $user = Auth::user();
@@ -80,7 +110,7 @@ class AppointmentController extends Controller
         return view('appointments.index', compact('appointments'));
     }
 
-    // 4. Update Status (Approve/Reject) [cite: 78]
+    // 4. Update Status (Approve/Reject)
     public function updateStatus(Request $request, Appointment $appointment)
     {
         $request->validate([
