@@ -7,17 +7,14 @@ use Illuminate\Http\Request;
 
 class MedicineController extends Controller
 {
-    // Menampilkan Daftar Obat (Dengan Filter)
     public function index(Request $request)
     {
         $query = Medicine::query();
 
-        // 1. Filter Pencarian Nama
         if ($request->filled('search')) {
             $query->where('name', 'like', '%' . $request->search . '%');
         }
 
-        // 2. Filter Status Stok
         if ($request->filled('status')) {
             if ($request->status == 'available') {
                 $query->where('stock', '>', 0);
@@ -26,12 +23,10 @@ class MedicineController extends Controller
             }
         }
 
-        // 3. Filter Tipe Obat
         if ($request->filled('type')) {
             $query->where('type', $request->type);
         }
 
-        // Urutkan stok paling sedikit dulu agar admin sadar, lalu yang terbaru
         $medicines = $query->orderBy('stock', 'asc')
                          ->latest()
                          ->paginate(10)
@@ -50,8 +45,9 @@ class MedicineController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'type' => 'required|in:keras,biasa',
-            'stock' => 'required|integer|min:0', // Tambahkan min:0 agar tidak negatif
+            'stock' => 'required|integer|min:0',
             'description' => 'required|string',
+            'image' => 'required|string', // Image sebagai string (URL/Nama File)
         ]);
 
         Medicine::create($request->all());
@@ -66,12 +62,12 @@ class MedicineController extends Controller
 
     public function update(Request $request, Medicine $medicine)
     {
-        // Perbaikan: Validasi harus sama lengkapnya dengan store
         $request->validate([
             'name' => 'required|string|max:255',
             'type' => 'required|in:keras,biasa',
             'stock' => 'required|integer|min:0',
-            'description' => 'required|string', // Jangan lupa validasi deskripsi saat update
+            'description' => 'required|string',
+            'image' => 'required|string',
         ]);
 
         $medicine->update($request->all());
