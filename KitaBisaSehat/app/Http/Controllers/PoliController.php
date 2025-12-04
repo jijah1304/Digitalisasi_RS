@@ -20,9 +20,11 @@ class PoliController extends Controller
 
     public function store(Request $request)
     {
+        // Validation: Image di sini kita anggap sebagai 'Nama Ikon' atau 'URL Gambar'
         $request->validate([
-            'name' => 'required|unique:polis',
-            'description' => 'required',
+            'name' => 'required|unique:polis|max:255',
+            'description' => 'required|string',
+            'image' => 'required|string', // Ubah jadi string, bukan 'image|mimes:...'
         ]);
 
         Poli::create($request->all());
@@ -38,13 +40,14 @@ class PoliController extends Controller
     public function update(Request $request, Poli $poli)
     {
         $request->validate([
-            'name' => 'required|unique:polis,name,' . $poli->id,
-            'description' => 'required',
+            'name' => 'required|unique:polis,name,' . $poli->id . '|max:255',
+            'description' => 'required|string',
+            'image' => 'required|string',
         ]);
 
         $poli->update($request->all());
 
-        return redirect()->route('polis.index')->with('success', 'Poli berhasil diupdate');
+        return redirect()->route('polis.index')->with('success', 'Poli berhasil diperbarui');
     }
 
     public function destroy(Poli $poli)
