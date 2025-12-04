@@ -7,7 +7,7 @@ use App\Models\Appointment;
 use App\Models\User;
 use App\Models\Medicine;
 use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon; // Import Carbon untuk waktu
+use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
@@ -56,18 +56,27 @@ class DashboardController extends Controller
         
         // === LOGIKA DASHBOARD DOKTER ===
         elseif ($user->role === 'dokter') {
-            // Janji temu hari ini yang sudah disetujui (Approved)
+            // 1. Antrean Hari Ini (Approved)
             $todayAppointments = Appointment::where('doctor_id', $user->id)
                 ->whereDate('date', Carbon::now()->format('Y-m-d'))
                 ->where('status', 'approved')
                 ->get();
             
-            // Hitung statistik kecil untuk dokter
+            // 2. Jumlah Janji Temu Pending (Perlu Validasi)
             $pendingRequests = Appointment::where('doctor_id', $user->id)
                 ->where('status', 'pending')
                 ->count();
 
-            return view('dashboard.doctor', compact('todayAppointments', 'pendingRequests'));
+            // 3. Pasien Terbaru yang Diperiksa (Status Selesai) - Ambil 5 Terakhir
+            // Mengambil janji temu yang statusnya selesai milik dokter ini, diurutkan dari yang terbaru
+            $recentPatients = Appointment::with(['patient', 'medicalRecord'])
+                ->where('doctor_id', $user->id)
+                ->where('status', 'selesai')
+                ->latest('updated_at') // Urutkan berdasarkan waktu update terakhir (saat status jadi selesai)
+                ->take(5)
+                ->get();
+
+            return view('dashboard.doctor', compact('todayAppointments', 'pendingRequests', 'recentPatients'));
         } 
         
         // === LOGIKA DASHBOARD PASIEN ===
