@@ -36,6 +36,8 @@ Route::middleware(['auth'])->group(function () {
 
         Route::patch('/appointments/{appointment}/status', [AppointmentController::class, 'updateStatus'])
             ->name('admin.appointments.status');
+        // Laporan Analitik
+        Route::get('/reports', [\App\Http\Controllers\ReportController::class, 'index'])->name('admin.reports.index');
     });
 
     // AREA DOKTER

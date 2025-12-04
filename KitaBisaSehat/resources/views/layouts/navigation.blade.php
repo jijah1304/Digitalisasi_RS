@@ -31,6 +31,9 @@
                     <a href="{{ route('medicines.index') }}" class="text-sm font-medium {{ request()->routeIs('medicines.*') ? 'text-rs-green font-bold' : 'text-rs-navy/70 hover:text-rs-teal' }} transition-colors">
                         Obat
                     </a>
+                    <a href="{{ route('admin.reports.index') }}" class="text-sm font-medium {{ request()->routeIs('admin.reports.*') ? 'text-rs-green font-bold' : 'text-rs-navy/70 hover:text-rs-teal' }} transition-colors">
+                        Laporan
+                    </a>
                 
                 <!-- MENU KHUSUS DOKTER -->
                 @elseif(Auth::user()->role === 'dokter')
