@@ -1,12 +1,15 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PoliController;
 use App\Http\Controllers\MedicineController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\MedicalRecordController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\DoctorPatientController;
 
 // 1. HALAMAN PUBLIK (Guest)
 Route::get('/', function () {
@@ -27,6 +30,10 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['role:admin'])->prefix('admin')->group(function () {
         Route::resource('polis', PoliController::class);
         Route::resource('medicines', MedicineController::class);
+        
+        // Resource User (Admin: Manage User)
+        Route::resource('users', UserController::class)->names('admin.users');
+
         Route::patch('/appointments/{appointment}/status', [AppointmentController::class, 'updateStatus'])
             ->name('admin.appointments.status');
     });
@@ -55,6 +62,10 @@ Route::middleware(['auth'])->group(function () {
         // 3. Delete (Tambahan Baru)
         Route::delete('/medical-records/{medicalRecord}', [MedicalRecordController::class, 'destroy'])
             ->name('medical_records.destroy');
+
+        // --- RIWAYAT PASIEN (DOKTER) ---
+        Route::get('/my-patients', [DoctorPatientController::class, 'index'])
+            ->name('doctor.patients.index');
     });
 
     // AREA PASIEN
@@ -64,6 +75,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/get-doctors/{poli_id}', [AppointmentController::class, 'getDoctorsByPoli']);
         Route::get('/get-schedules/{doctor_id}', [AppointmentController::class, 'getSchedulesByDoctor']);
     });
+    
+    // --- PROFILE USER (Bawaan Breeze) ---
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
 require __DIR__.'/auth.php';
