@@ -52,7 +52,7 @@
 
             <div class="flex gap-4">
                 <div class="glass px-4 py-2 rounded-xl flex items-center gap-3 border border-white/40">
-                    <div class="text-2xl font-bold text-rs-green">2<span class="text-sm align-top">+</span></div>
+                    <div class="text-2xl font-bold text-rs-green">4<span class="text-sm align-top">+</span></div>
                     <div class="text-xs font-medium leading-tight text-rs-navy">Dokter<br>Spesialis</div>
                 </div>
                 <div class="glass px-4 py-2 rounded-xl flex items-center gap-3 border border-white/40">
@@ -80,8 +80,8 @@
                     <img src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&q=80&w=200&h=200" class="w-full h-full object-cover">
                 </div>
                 <div>
-                    <h3 class="font-semibold text-lg leading-tight">dr. Budi Santoso</h3>
-                    <p class="text-rs-mint text-sm">Spesialis Poli Umum</p>
+                    <h3 class="font-semibold text-lg leading-tight">drg. Nursyamsi</h3>
+                    <p class="text-rs-mint text-sm">Spesialis Poli Gigi</p>
                     <div class="mt-2 flex items-center gap-2 bg-white/10 px-2 py-1 rounded w-fit">
                         <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
                         <span class="text-[10px] font-medium tracking-wide">SEDANG PRAKTIK</span>
