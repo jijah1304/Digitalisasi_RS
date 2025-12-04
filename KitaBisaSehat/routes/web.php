@@ -10,6 +10,7 @@ use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\MedicalRecordController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\DoctorPatientController;
+use App\Http\Controllers\ReportController;
 
 // 1. HALAMAN PUBLIK (Guest)
 Route::get('/', function () {
@@ -30,14 +31,13 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['role:admin'])->prefix('admin')->group(function () {
         Route::resource('polis', PoliController::class);
         Route::resource('medicines', MedicineController::class);
-        
-        // Resource User (Admin: Manage User)
         Route::resource('users', UserController::class)->names('admin.users');
-
+        
         Route::patch('/appointments/{appointment}/status', [AppointmentController::class, 'updateStatus'])
             ->name('admin.appointments.status');
+
         // Laporan Analitik
-        Route::get('/reports', [\App\Http\Controllers\ReportController::class, 'index'])->name('admin.reports.index');
+        Route::get('/reports', [ReportController::class, 'index'])->name('admin.reports.index');
     });
 
     // AREA DOKTER
@@ -47,25 +47,20 @@ Route::middleware(['auth'])->group(function () {
         Route::patch('/appointments/{appointment}/status', [AppointmentController::class, 'updateStatus'])
             ->name('doctor.appointments.status');
         
-        // --- MEDICAL RECORDS (Create, Store, Edit, Update, Destroy) ---
-        
-        // 1. Create & Store (Dari Appointment)
+        // Medical Records
         Route::get('/appointments/{appointment}/record/create', [MedicalRecordController::class, 'create'])
             ->name('medical_records.create');
         Route::post('/appointments/{appointment}/record', [MedicalRecordController::class, 'store'])
             ->name('medical_records.store');
-
-        // 2. Edit & Update (Tambahan Baru)
+        
         Route::get('/medical-records/{medicalRecord}/edit', [MedicalRecordController::class, 'edit'])
             ->name('medical_records.edit');
         Route::put('/medical-records/{medicalRecord}', [MedicalRecordController::class, 'update'])
             ->name('medical_records.update');
-            
-        // 3. Delete (Tambahan Baru)
         Route::delete('/medical-records/{medicalRecord}', [MedicalRecordController::class, 'destroy'])
             ->name('medical_records.destroy');
 
-        // --- RIWAYAT PASIEN (DOKTER) ---
+        // Riwayat Pasien
         Route::get('/my-patients', [DoctorPatientController::class, 'index'])
             ->name('doctor.patients.index');
     });
@@ -74,11 +69,15 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['role:pasien'])->prefix('patient')->group(function () {
         Route::get('/appointments/create', [AppointmentController::class, 'create'])->name('appointments.create');
         Route::post('/appointments', [AppointmentController::class, 'store'])->name('appointments.store');
+        // API Helper
         Route::get('/get-doctors/{poli_id}', [AppointmentController::class, 'getDoctorsByPoli']);
         Route::get('/get-schedules/{doctor_id}', [AppointmentController::class, 'getSchedulesByDoctor']);
+        // Route untuk menyimpan feedback dari modal di dashboard pasien
+        Route::post('/appointments/{appointment}/feedback', [AppointmentController::class, 'storeFeedback'])
+            ->name('appointments.feedback');
     });
     
-    // --- PROFILE USER (Bawaan Breeze) ---
+    // --- PROFILE USER ---
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

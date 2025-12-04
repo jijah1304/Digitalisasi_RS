@@ -16,28 +16,28 @@ class Appointment extends Model
         'date',
         'complaint',
         'status',           // pending, approved, rejected, selesai
-        'rejection_reason',
+        'rejection_reason', // Alasan penolakan
+        'rating',           // Tambahkan ini
+        'feedback',         // Tambahkan ini
     ];
 
-    // Milik Pasien
+    // --- RELASI ---
+
     public function patient()
     {
         return $this->belongsTo(User::class, 'patient_id');
     }
 
-    // Milik Dokter
     public function doctor()
     {
         return $this->belongsTo(User::class, 'doctor_id');
     }
 
-    // Berdasarkan Jadwal tertentu
     public function schedule()
     {
         return $this->belongsTo(Schedule::class);
     }
 
-    // Punya satu Rekam Medis (jika sudah diperiksa)
     public function medicalRecord()
     {
         return $this->hasOne(MedicalRecord::class);
