@@ -5,10 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Appointment;
 use App\Models\Poli;
 use App\Models\User;
-use App\Models\Schedule; // Pastikan Model Schedule di-import
+use App\Models\Schedule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon; // Pastikan Carbon di-import untuk manipulasi tanggal
+use Carbon\Carbon;
 
 class AppointmentController extends Controller
 {
@@ -45,34 +45,21 @@ class AppointmentController extends Controller
             'complaint' => 'required',
         ]);
 
-        // --- VALIDASI HARI PRAKTIK (LOGIKA BARU) ---
-        
-        // 1. Ambil data jadwal yang dipilih user
+        // --- VALIDASI HARI PRAKTIK ---
         $schedule = Schedule::findOrFail($request->schedule_id);
-
-        // 2. Ambil nama hari dari tanggal yang dipilih (Format Inggris: Monday, Tuesday...)
         $selectedDayEnglish = Carbon::parse($request->date)->format('l');
-
-        // 3. Mapping Hari Inggris ke Indonesia (Sesuai Database)
         $dayMap = [
-            'Sunday' => 'Minggu',
-            'Monday' => 'Senin',
-            'Tuesday' => 'Selasa',
-            'Wednesday' => 'Rabu',
-            'Thursday' => 'Kamis',
-            'Friday' => 'Jumat',
-            'Saturday' => 'Sabtu',
+            'Sunday' => 'Minggu', 'Monday' => 'Senin', 'Tuesday' => 'Selasa',
+            'Wednesday' => 'Rabu', 'Thursday' => 'Kamis', 'Friday' => 'Jumat', 'Saturday' => 'Sabtu',
         ];
-        
         $translatedDay = $dayMap[$selectedDayEnglish] ?? '';
 
-        // 4. Bandingkan: Jika hari tanggal beda dengan hari jadwal, tolak!
         if ($translatedDay !== $schedule->day) {
             return back()
-                ->withInput() // Kembalikan inputan user agar tidak mengetik ulang
+                ->withInput()
                 ->withErrors(['date' => "Dokter ini hanya praktik pada hari {$schedule->day}, sedangkan tanggal yang Anda pilih adalah hari $translatedDay."]);
         }
-        // -------------------------------------------
+        // -----------------------------
 
         Appointment::create([
             'patient_id' => Auth::id(),
@@ -80,7 +67,7 @@ class AppointmentController extends Controller
             'schedule_id' => $request->schedule_id,
             'date' => $request->date,
             'complaint' => $request->complaint,
-            'status' => 'pending' // Default pending
+            'status' => 'pending'
         ]);
 
         return redirect()->route('dashboard')->with('success', 'Janji temu berhasil dibuat, mohon tunggu konfirmasi.');
@@ -94,32 +81,36 @@ class AppointmentController extends Controller
         $user = Auth::user();
         
         if ($user->role === 'admin') {
-            // Admin melihat semua
             $appointments = Appointment::with(['patient', 'doctor', 'schedule'])->latest()->get();
         } elseif ($user->role === 'dokter') {
-            // Dokter hanya melihat janji untuk dirinya
             $appointments = Appointment::with(['patient', 'schedule'])
                 ->where('doctor_id', $user->id)
                 ->latest()
                 ->get();
         } else {
-            // Pasien melihat riwayatnya sendiri
             $appointments = Appointment::where('patient_id', $user->id)->latest()->get();
         }
 
         return view('appointments.index', compact('appointments'));
     }
 
-    // 4. Update Status (Approve/Reject)
+    // 4. Update Status (Approve/Reject dengan Alasan)
     public function updateStatus(Request $request, Appointment $appointment)
     {
         $request->validate([
             'status' => 'required|in:approved,rejected',
+            // Jika status rejected, alasan wajib diisi
+            'rejection_reason' => 'required_if:status,rejected|nullable|string|max:255',
         ]);
 
-        $appointment->update([
-            'status' => $request->status
-        ]);
+        $data = ['status' => $request->status];
+
+        // Simpan alasan jika ditolak
+        if ($request->status == 'rejected') {
+            $data['rejection_reason'] = $request->rejection_reason;
+        }
+
+        $appointment->update($data);
 
         return back()->with('success', 'Status janji temu diperbarui.');
     }

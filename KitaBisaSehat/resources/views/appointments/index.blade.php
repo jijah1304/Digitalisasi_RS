@@ -30,6 +30,17 @@
         </div>
     @endif
 
+    <!-- Alert Error (Validasi Alasan) -->
+    @if ($errors->any())
+        <div class="mb-6 p-4 bg-red-100 border-l-4 border-red-500 text-red-700 rounded-r-xl">
+            <ul class="list-disc list-inside text-sm">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <!-- Tabel Glass -->
     <div class="glass rounded-3xl overflow-hidden shadow-sm">
         <div class="overflow-x-auto">
@@ -37,16 +48,11 @@
                 <thead class="bg-white/40 text-rs-navy text-sm uppercase tracking-wider">
                     <tr>
                         <th class="p-5 font-semibold">Tanggal & Waktu</th>
-                        
-                        <!-- Header Dinamis: Pasien lihat Dokter, Dokter lihat Pasien -->
                         <th class="p-5 font-semibold">
                             {{ Auth::user()->role == 'pasien' ? 'Dokter Tujuan' : 'Nama Pasien' }}
                         </th>
-
                         <th class="p-5 font-semibold">Keluhan</th>
                         <th class="p-5 font-semibold text-center">Status</th>
-                        
-                        <!-- Kolom Aksi (Untuk Semua Role, karena Pasien butuh lihat hasil juga) -->
                         <th class="p-5 font-semibold text-center">Aksi</th>
                     </tr>
                 </thead>
@@ -95,7 +101,7 @@
                                         Selesai
                                     </span>
                                 @else
-                                    <span class="inline-flex items-center px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold border border-red-200">
+                                    <span class="inline-flex items-center px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold border border-red-200 cursor-help" title="Alasan: {{ $apt->rejection_reason }}">
                                         Ditolak
                                     </span>
                                 @endif
@@ -107,6 +113,8 @@
                                 <!-- OPSI A: Jika PENDING & User bukan Pasien (Admin/Dokter Approve) -->
                                 @if($apt->status == 'pending' && Auth::user()->role !== 'pasien')
                                     <div class="flex justify-center gap-2">
+                                        
+                                        <!-- Tombol Approve -->
                                         <form action="{{ Auth::user()->role == 'admin' ? route('admin.appointments.status', $apt->id) : route('doctor.appointments.status', $apt->id) }}" method="POST">
                                             @csrf @method('PATCH')
                                             <input type="hidden" name="status" value="approved">
@@ -115,10 +123,14 @@
                                             </button>
                                         </form>
 
-                                        <form action="{{ Auth::user()->role == 'admin' ? route('admin.appointments.status', $apt->id) : route('doctor.appointments.status', $apt->id) }}" method="POST" onsubmit="return confirm('Tolak janji temu?');">
+                                        <!-- Tombol Reject (Pakai JS Prompt) -->
+                                        <form id="reject-form-{{ $apt->id }}" action="{{ Auth::user()->role == 'admin' ? route('admin.appointments.status', $apt->id) : route('doctor.appointments.status', $apt->id) }}" method="POST">
                                             @csrf @method('PATCH')
                                             <input type="hidden" name="status" value="rejected">
-                                            <button type="submit" class="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-600 hover:text-white transition-all shadow-sm" title="Tolak">
+                                            <!-- Hidden Input untuk menyimpan alasan dari JS -->
+                                            <input type="hidden" name="rejection_reason" id="reason-{{ $apt->id }}">
+                                            
+                                            <button type="button" onclick="rejectAppointment({{ $apt->id }})" class="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-600 hover:text-white transition-all shadow-sm" title="Tolak">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
                                             </button>
                                         </form>
@@ -131,7 +143,12 @@
                                         Lihat Rekam Medis
                                     </a>
 
-                                <!-- OPSI C: Lainnya (Approved tapi belum diperiksa, atau Rejected) -->
+                                <!-- OPSI C: Jika REJECTED (Tampilkan Alasan) -->
+                                @elseif($apt->status == 'rejected')
+                                    <span class="text-xs text-red-500 italic max-w-[150px] inline-block truncate" title="{{ $apt->rejection_reason }}">
+                                        "{{ $apt->rejection_reason }}"
+                                    </span>
+
                                 @else
                                     <span class="text-xs text-rs-navy/40 italic">-</span>
                                 @endif
@@ -152,4 +169,25 @@
         </div>
     </div>
 </div>
+
+<!-- SCRIPT UNTUK REJECT REASON -->
+<script>
+    function rejectAppointment(id) {
+        // 1. Munculkan Prompt Input
+        let reason = prompt("Masukkan alasan penolakan janji temu ini:");
+        
+        // 2. Jika user klik Cancel (null) -> Batal
+        if (reason === null) return;
+
+        // 3. Jika user klik OK tapi kosong -> Error
+        if (reason.trim() === "") {
+            alert("Alasan penolakan wajib diisi!");
+            return;
+        }
+
+        // 4. Isi hidden input dan submit form
+        document.getElementById('reason-' + id).value = reason;
+        document.getElementById('reject-form-' + id).submit();
+    }
+</script>
 @endsection
