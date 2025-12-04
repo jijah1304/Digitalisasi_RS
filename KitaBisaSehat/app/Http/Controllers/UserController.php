@@ -25,7 +25,7 @@ class UserController extends Controller
             $query->whereDate('created_at', $request->date);
         }
 
-        // 3. Pencarian Nama/Email (Opsional tapi berguna)
+        // 3. Pencarian Nama/Email
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -67,6 +67,4 @@ class UserController extends Controller
 
         return redirect()->route('admin.users.index')->with('success', 'User berhasil ditambahkan.');
     }
-
-    // (Edit & Delete bisa ditambahkan jika perlu, untuk sekarang Index & Create dulu sesuai permintaan filter)
 }
