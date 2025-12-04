@@ -19,22 +19,19 @@ class AppointmentController extends Controller
         $polis = Poli::all();
         return view('patient.appointments.create', compact('polis'));
     }
-
     // API: Ambil Dokter by Poli (AJAX)
     public function getDoctorsByPoli($poli_id)
     {
         $doctors = User::where('role', 'dokter')->where('poli_id', $poli_id)->get();
         return response()->json($doctors);
     }
-
     // API: Ambil Jadwal by Dokter (AJAX)
     public function getSchedulesByDoctor($doctor_id)
     {
         $schedules = Schedule::where('doctor_id', $doctor_id)->get();
         return response()->json($schedules);
     }
-
-    // Simpan Janji Temu Baru
+    // Simpan Janji Temu Baru (DENGAN VALIDASI DOUBLE BOOKING)
     public function store(Request $request)
     {
         $request->validate([
@@ -43,10 +40,9 @@ class AppointmentController extends Controller
             'date' => 'required|date|after_or_equal:today',
             'complaint' => 'required',
         ]);
-
-        // --- VALIDASI HARI PRAKTIK (Backend Security) ---
         $schedule = Schedule::findOrFail($request->schedule_id);
-        
+
+        // --- VALIDASI 1: HARI PRAKTIK ---
         // Cek hari dari tanggal yang dipilih
         $selectedDayEnglish = Carbon::parse($request->date)->format('l');
         $dayMap = [
@@ -54,12 +50,24 @@ class AppointmentController extends Controller
             'Wednesday' => 'Rabu', 'Thursday' => 'Kamis', 'Friday' => 'Jumat', 'Saturday' => 'Sabtu',
         ];
         $translatedDay = $dayMap[$selectedDayEnglish] ?? '';
-
         // Bandingkan dengan hari di jadwal
         if ($translatedDay !== $schedule->day) {
             return back()
                 ->withInput()
                 ->withErrors(['date' => "Dokter ini hanya praktik pada hari {$schedule->day}, sedangkan tanggal yang Anda pilih adalah hari $translatedDay."]);
+        }
+
+        // --- VALIDASI 2: CEK KETERSEDIAAN SLOT (BARU) ---
+        // Mencegah pasien lain membooking slot yang sama di tanggal yang sama
+        $isBooked = Appointment::where('doctor_id', $request->doctor_id)
+            ->where('schedule_id', $request->schedule_id)
+            ->where('date', $request->date)
+            ->whereIn('status', ['pending', 'approved']) // Hanya cek yang aktif
+            ->exists();
+        if ($isBooked) {
+            return back()
+                ->withInput()
+                ->withErrors(['schedule_id' => 'Mohon maaf, slot waktu ini sudah dipesan oleh pasien lain. Silakan pilih jam atau tanggal lain.']);
         }
         // ------------------------------------------------
 
@@ -71,7 +79,6 @@ class AppointmentController extends Controller
             'complaint' => $request->complaint,
             'status' => 'pending'
         ]);
-
         return redirect()->route('dashboard')->with('success', 'Janji temu berhasil dibuat, mohon tunggu konfirmasi.');
     }
 
@@ -94,7 +101,6 @@ class AppointmentController extends Controller
             // Pasien melihat riwayatnya sendiri
             $appointments = Appointment::where('patient_id', $user->id)->latest()->get();
         }
-
         return view('appointments.index', compact('appointments'));
     }
 
@@ -106,16 +112,12 @@ class AppointmentController extends Controller
             // Jika reject, alasan wajib diisi
             'rejection_reason' => 'required_if:status,rejected|nullable|string|max:255',
         ]);
-
         $data = ['status' => $request->status];
-
         // Simpan alasan jika statusnya rejected
         if ($request->status == 'rejected') {
             $data['rejection_reason'] = $request->rejection_reason;
         }
-
         $appointment->update($data);
-
         return back()->with('success', 'Status janji temu diperbarui.');
     }
 
@@ -127,29 +129,24 @@ class AppointmentController extends Controller
         if ($appointment->patient_id !== Auth::id()) {
             abort(403, 'Anda tidak berhak memberikan ulasan untuk janji temu ini.');
         }
-
         // 2. Validasi Status (Harus Selesai)
         if ($appointment->status !== 'selesai') {
             return back()->with('error', 'Feedback hanya bisa diberikan setelah kunjungan selesai.');
         }
-
         // 3. Validasi Duplikasi (Cek apakah sudah pernah rating)
         if ($appointment->rating != null) {
             return back()->with('error', 'Anda sudah memberikan ulasan untuk kunjungan ini.');
         }
-
         // 4. Validasi Input
         $request->validate([
             'rating' => 'required|integer|min:1|max:5',
             'feedback' => 'nullable|string|max:500',
         ]);
-
         // 5. Update Database
         $appointment->update([
             'rating' => $request->rating,
             'feedback' => $request->feedback,
         ]);
-
         return back()->with('success', 'Terima kasih atas ulasan dan rating Anda!');
     }
 }

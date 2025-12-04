@@ -27,9 +27,22 @@ class ScheduleController extends Controller
             'start_time' => 'required',
         ]);
 
-        // Hitung End Time otomatis (30 menit) [cite: 48]
         $startTime = \Carbon\Carbon::parse($request->start_time);
         $endTime = $startTime->copy()->addMinutes(30);
+
+        // === VALIDASI TUMPANG TINDIH (OVERLAP) YANG LEBIH KUAT ===
+        // Rumus Overlap: (StartA < EndB) DAN (EndA > StartB)
+        // Ini mencegah jadwal yang beririsan, di dalam, atau melingkupi jadwal lain.
+        $exists = Schedule::where('doctor_id', Auth::id())
+            ->where('day', $request->day)
+            ->where('start_time', '<', $endTime->format('H:i:s'))
+            ->where('end_time', '>', $startTime->format('H:i:s'))
+            ->exists();
+
+        if ($exists) {
+            return back()->withErrors(['start_time' => 'Jadwal bentrok! Anda sudah memiliki slot waktu yang beririsan di jam tersebut.']);
+        }
+        // ==========================================
 
         Schedule::create([
             'doctor_id' => Auth::id(),
