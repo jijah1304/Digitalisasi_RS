@@ -34,6 +34,18 @@ class DatabaseSeeder extends Seeder
             'image' => 'poli-anak.jpg'
         ]);
 
+        $poliJiwa = Poli::create([
+            'name' => 'Poli Jiwa',
+            'description' => 'Untuk yang sakjiw seperti admin.',
+            'image' => 'poli-jiwa.jpg'
+        ]);
+
+        $poliJantung = Poli::create([
+            'name' => 'Poli Jantung',
+            'description' => 'Layanan kesehatan jantung dan pembuluh darah.',
+            'image' => 'poli-jantung.jpg'
+        ]);
+
         // 2. SEED MASTER DATA OBAT [cite: 52]
         $paracetamol = Medicine::create([
             'name' => 'Paracetamol 500mg',
@@ -59,8 +71,16 @@ class DatabaseSeeder extends Seeder
             'image' => 'vitaminc.jpg'
         ]);
 
+        $kingJulien = Medicine::create([
+            'name' => 'King Julien 1000mg',
+            'description' => 'Suplemen untuk delusional.',
+            'type' => 'keras',
+            'stock' => 200,
+            'image' => 'kingjulien.jpg'
+        ]);
+
         // 3. SEED USERS (Admin, Dokter, Pasien) [cite: 9]
-        // A. Admin
+        // Admin
         User::create([
             'name' => 'Admin Utama',
             'email' => 'admin@rs.com',
@@ -68,25 +88,41 @@ class DatabaseSeeder extends Seeder
             'role' => 'admin',
         ]);
 
-        // B. Dokter (Dr. Budi - Poli Umum) [cite: 25]
-        $drBudi = User::create([
-            'name' => 'dr. Budi Santoso',
-            'email' => 'drbudi@rs.com',
+        // Dokter
+        $drSylus = User::create([
+            'name' => 'dr. Sylus',
+            'email' => 'drsylus@rs.com',
             'password' => Hash::make('password'),
             'role' => 'dokter',
             'poli_id' => $poliUmum->id
         ]);
 
-        // C. Dokter (Dr. Siti - Poli Gigi)
-        $drSiti = User::create([
-            'name' => 'drg. Siti Aminah',
-            'email' => 'drsiti@rs.com',
+        $drAnci = User::create([
+            'name' => 'drg. Nursyamsi',
+            'email' => 'dranci@rs.com',
             'password' => Hash::make('password'),
             'role' => 'dokter',
             'poli_id' => $poliGigi->id
         ]);
 
-        // D. Pasien (guweh) [cite: 15]
+        $drZayne = User::create([
+            'name' => 'dr. Li Shen',
+            'email' => 'drzayne@rs.com',
+            'password' => Hash::make('password'),
+            'role' => 'dokter',
+            'poli_id' => $poliJantung->id
+        ]);
+
+        $drJija = User::create([
+            'name' => 'Jija',
+            'email' => 'drjija@rs.com',
+            'password' => Hash::make('password'),
+            'role' => 'dokter',
+            'poli_id' => $poliJiwa->id
+        ]);
+
+
+        // Pasien (guweh) [cite: 15]
         $pasienAzizah = User::create([
             'name' => 'Azizah Nurul',
             'email' => 'azizah@mail.com',
@@ -94,27 +130,49 @@ class DatabaseSeeder extends Seeder
             'role' => 'pasien',
         ]);
 
+        $pasienJija = User::create([
+            'name' => 'jija 2.0',
+            'email' => 'jijah@mail.com',
+            'password' => Hash::make('password'),
+            'role' => 'pasien',
+        ]);
+
+        $pasienMort = User::create([
+            'name' => 'Mort',
+            'email' => 'mort@mail.com',
+            'password' => Hash::make('password'),
+            'role' => 'pasien',
+        ]);
+
         // 4. SEED JADWAL DOKTER [cite: 42]
         // Aturan: Durasi 30 menit
         // Jadwal dr. Budi (Senin 08:00 - 08:30 dan 08:30 - 09:00)
-        $scheduleBudi1 = Schedule::create([
-            'doctor_id' => $drBudi->id,
+        $scheduleSylus1 = Schedule::create([
+            'doctor_id' => $drSylus->id,
             'day' => 'Senin',
             'start_time' => '08:00',
             'end_time' => '08:30'
         ]);
 
-        $scheduleBudi2 = Schedule::create([
-            'doctor_id' => $drBudi->id,
+        $scheduleSylus2 = Schedule::create([
+            'doctor_id' => $drSylus->id,
             'day' => 'Senin',
             'start_time' => '08:30',
             'end_time' => '09:00'
         ]);
 
-        // Jadwal dr. Siti (Selasa 09:00 - 09:30)
-        $scheduleSiti1 = Schedule::create([
-            'doctor_id' => $drSiti->id,
+        // Jadwal dr. anci (Selasa 09:00 - 09:30)
+        $scheduleAnci1 = Schedule::create([
+            'doctor_id' => $drAnci->id,
             'day' => 'Selasa',
+            'start_time' => '09:00',
+            'end_time' => '09:30'
+        ]);
+
+        // Jadwal dr. jija (Rabu 09:00 - 09:30)
+        $scheduleJija1 = Schedule::create([
+            'doctor_id' => $drJija->id,
+            'day' => 'Rabu',
             'start_time' => '09:00',
             'end_time' => '09:30'
         ]);
@@ -123,19 +181,29 @@ class DatabaseSeeder extends Seeder
         // Kasus 1: Janji Temu "Pending" (Baru booking)
         Appointment::create([
             'patient_id' => $pasienAzizah->id,
-            'doctor_id' => $drBudi->id,
-            'schedule_id' => $scheduleBudi2->id,
+            'doctor_id' => $drSylus->id,
+            'schedule_id' => $scheduleSylus2->id,
             'date' => now()->addDays(1)->format('Y-m-d'), // Besok
             'complaint' => 'Demam tinggi dan pusing.',
             'status' => 'pending'
         ]);
 
-        // Kasus 2: Janji Temu "Selesai" (Sudah diperiksa - Histori)
-        // Ini agar kita bisa demo fitur Rekam Medis
+        // Kasus 2: Janji Temu "Pending" (Baru booking)
+        Appointment::create([
+            'patient_id' => $pasienMort->id,
+            'doctor_id' => $drJija->id,
+            'schedule_id' => $scheduleJija1->id,
+            'date' => now()->addDays(1)->format('Y-m-d'), // Besok
+            'complaint' => 'Obsesi terhadap kaki King Julien. #proud',
+            'status' => 'pending'
+        ]);
+
+        // Kasus 3: Janji Temu "Selesai" (Sudah diperiksa - Histori)
+        // Ini agar bisa demo fitur Rekam Medis
         $appointmentSelesai = Appointment::create([
             'patient_id' => $pasienAzizah->id,
-            'doctor_id' => $drBudi->id,
-            'schedule_id' => $scheduleBudi1->id,
+            'doctor_id' => $drSylus->id,
+            'schedule_id' => $scheduleSylus1->id,
             'date' => now()->subDays(2)->format('Y-m-d'), // 2 hari lalu
             'complaint' => 'Sakit tenggorokan.',
             'status' => 'selesai'
