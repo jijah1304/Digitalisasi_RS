@@ -87,27 +87,30 @@ class MedicalRecordController extends Controller
             'medical_action' => 'required|string',
             'medicines' => 'required|array',
             'quantities' => 'required|array',
+            'date' => 'required|date', // Tambah validasi tanggal
         ]);
 
         try {
             DB::transaction(function () use ($request, $medicalRecord) {
-                // A. Update Teks
+                // 1. Update Data Medis
                 $medicalRecord->update([
                     'diagnosis' => $request->diagnosis,
                     'medical_action' => $request->medical_action,
                     'notes' => $request->notes,
                 ]);
 
-                // B. LOGIKA STOK OBAT
-                // 1. Kembalikan stok lama ke gudang dulu
+                // 2. Update Tanggal di Appointment (Tabel Relasi)
+                // Ini penting karena tanggal disimpan di tabel appointments, bukan medical_records
+                $medicalRecord->appointment->update([
+                    'date' => $request->date
+                ]);
+
+                // 3. LOGIKA STOK OBAT
                 foreach ($medicalRecord->medicines as $oldMed) {
                     $oldMed->increment('stock', $oldMed->pivot->quantity);
                 }
-
-                // 2. Hapus semua resep lama
                 $medicalRecord->medicines()->detach();
 
-                // 3. Masukkan resep baru & Kurangi stok baru
                 foreach ($request->medicines as $index => $medicineId) {
                     $quantity = $request->quantities[$index];
                     $medicalRecord->medicines()->attach($medicineId, ['quantity' => $quantity]);
