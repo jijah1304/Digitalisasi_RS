@@ -7,10 +7,11 @@ use App\Models\Poli;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rules;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth; // Tambahkan import Auth
 
 class UserController extends Controller
 {
-    // Menampilkan Daftar User (Dengan Filter)
+    // Menampilkan Daftar User (Dengan Filter & Sorting)
     public function index(Request $request)
     {
         $query = User::query();
@@ -34,7 +35,28 @@ class UserController extends Controller
             });
         }
 
-        $users = $query->latest()->paginate(10)->withQueryString();
+        // 4. Sorting
+        if ($request->filled('sort')) {
+            switch ($request->sort) {
+                case 'name_asc':
+                    $query->orderBy('name', 'asc');
+                    break;
+                case 'name_desc':
+                    $query->orderBy('name', 'desc');
+                    break;
+                case 'oldest':
+                    $query->oldest();
+                    break;
+                case 'newest':
+                default:
+                    $query->latest();
+                    break;
+            }
+        } else {
+            $query->latest();
+        }
+
+        $users = $query->paginate(10)->withQueryString();
 
         return view('admin.users.index', compact('users'));
     }
@@ -42,7 +64,7 @@ class UserController extends Controller
     // Form Tambah User
     public function create()
     {
-        $polis = Poli::all(); // Untuk dropdown jika role dokter
+        $polis = Poli::all();
         return view('admin.users.create', compact('polis'));
     }
 
@@ -66,5 +88,19 @@ class UserController extends Controller
         ]);
 
         return redirect()->route('admin.users.index')->with('success', 'User berhasil ditambahkan.');
+    }
+
+    // Hapus User (FITUR BARU)
+    public function destroy(User $user)
+    {
+        // Mencegah admin menghapus dirinya sendiri saat sedang login
+        if ($user->id === Auth::id()) {
+            return back()->with('error', 'Anda tidak dapat menghapus akun Anda sendiri saat sedang login.');
+        }
+
+        // Hapus user (Data terkait seperti appointment akan terhapus otomatis jika onDelete cascade aktif di migration)
+        $user->delete();
+
+        return redirect()->route('admin.users.index')->with('success', 'User berhasil dihapus.');
     }
 }
