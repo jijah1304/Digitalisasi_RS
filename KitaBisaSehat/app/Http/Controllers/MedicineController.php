@@ -7,9 +7,36 @@ use Illuminate\Http\Request;
 
 class MedicineController extends Controller
 {
-    public function index()
+    // Menampilkan Daftar Obat (Dengan Filter)
+    public function index(Request $request)
     {
-        $medicines = Medicine::all();
+        $query = Medicine::query();
+
+        // 1. Filter Pencarian Nama
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+        // 2. Filter Status Stok
+        if ($request->filled('status')) {
+            if ($request->status == 'available') {
+                $query->where('stock', '>', 0);
+            } elseif ($request->status == 'unavailable') {
+                $query->where('stock', '<=', 0);
+            }
+        }
+
+        // 3. Filter Tipe Obat
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+
+        // Urutkan stok paling sedikit dulu agar admin sadar, lalu yang terbaru
+        $medicines = $query->orderBy('stock', 'asc')
+                         ->latest()
+                         ->paginate(10)
+                         ->withQueryString();
+
         return view('admin.medicines.index', compact('medicines'));
     }
 
@@ -21,10 +48,10 @@ class MedicineController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required',
+            'name' => 'required|string|max:255',
             'type' => 'required|in:keras,biasa',
-            'stock' => 'required|integer',
-            'description' => 'required',
+            'stock' => 'required|integer|min:0', // Tambahkan min:0 agar tidak negatif
+            'description' => 'required|string',
         ]);
 
         Medicine::create($request->all());
@@ -39,10 +66,12 @@ class MedicineController extends Controller
 
     public function update(Request $request, Medicine $medicine)
     {
+        // Perbaikan: Validasi harus sama lengkapnya dengan store
         $request->validate([
-            'name' => 'required',
-            'type' => 'required',
-            'stock' => 'required|integer',
+            'name' => 'required|string|max:255',
+            'type' => 'required|in:keras,biasa',
+            'stock' => 'required|integer|min:0',
+            'description' => 'required|string', // Jangan lupa validasi deskripsi saat update
         ]);
 
         $medicine->update($request->all());
