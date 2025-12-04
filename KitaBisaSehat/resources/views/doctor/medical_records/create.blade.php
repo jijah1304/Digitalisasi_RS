@@ -47,7 +47,7 @@
                 <div class="glass p-8 rounded-3xl mb-6">
                     <h3 class="font-bold text-xl text-rs-navy mb-6 flex items-center gap-2">
                         <span class="w-8 h-8 bg-rs-navy text-white rounded-lg flex items-center justify-center text-sm">1</span>
-                        Diagnosa & Tindakan [cite: 85]
+                        Diagnosa & Tindakan
                     </h3>
 
                     <div class="space-y-5">
@@ -72,7 +72,7 @@
                     <div class="flex justify-between items-center mb-6">
                         <h3 class="font-bold text-xl text-rs-navy flex items-center gap-2">
                             <span class="w-8 h-8 bg-rs-green text-white rounded-lg flex items-center justify-center text-sm">2</span>
-                            Resep Obat [cite: 86]
+                            Resep Obat
                         </h3>
                         <button type="button" id="add-medicine" class="text-xs font-bold text-rs-teal bg-rs-teal/10 px-3 py-2 rounded-lg hover:bg-rs-teal hover:text-white transition-colors">
                             + Tambah Obat Lain
