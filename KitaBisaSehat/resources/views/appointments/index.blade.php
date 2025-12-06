@@ -136,8 +136,15 @@
                                         </form>
                                     </div>
                                 
-                                <!-- OPSI B: Jika SELESAI (Ada Medical Record) -->
-                                @elseif($apt->status == 'selesai' && $apt->medicalRecord)
+                                <!-- OPSI B: Jika Ada Medical Record (untuk pasien) -->
+                                @elseif($apt->medicalRecord && Auth::user()->role == 'pasien')
+                                    <a href="{{ route('medical_records.show', $apt->medicalRecord->id) }}" class="inline-flex items-center gap-1 text-xs font-bold text-rs-teal hover:underline bg-rs-teal/10 px-3 py-1.5 rounded-lg transition-colors">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z" /><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" /></svg>
+                                        Lihat Rekam Medis
+                                    </a>
+
+                                <!-- OPSI C: Jika Ada Medical Record (untuk admin/dokter) -->
+                                @elseif($apt->medicalRecord && Auth::user()->role !== 'pasien')
                                     <a href="{{ route('medical_records.show', $apt->medicalRecord->id) }}" class="inline-flex items-center gap-1 text-xs font-bold text-rs-teal hover:underline bg-rs-teal/10 px-3 py-1.5 rounded-lg transition-colors">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z" /><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" /></svg>
                                         Lihat Rekam Medis

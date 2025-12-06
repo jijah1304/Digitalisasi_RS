@@ -77,6 +77,10 @@ Route::middleware(['auth'])->group(function () {
         // Route untuk menyimpan feedback dari modal di dashboard pasien
         Route::post('/appointments/{appointment}/feedback', [AppointmentController::class, 'storeFeedback'])
             ->name('appointments.feedback');
+
+        // Medicine Confirmation
+        Route::post('/appointments/{appointment}/confirm-medicine', [AppointmentController::class, 'confirmMedicinePickup'])
+            ->name('appointments.confirm-medicine');
     });
     
     // --- PROFILE USER ---

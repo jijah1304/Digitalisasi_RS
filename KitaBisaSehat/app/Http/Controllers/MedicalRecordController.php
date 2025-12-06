@@ -50,7 +50,7 @@ class MedicalRecordController extends Controller
                 }
 
                 // Update Status Janji Temu
-                $appointment->update(['status' => 'selesai']);
+                $appointment->update(['status' => 'obat_diterima']);
             });
 
             return redirect()->route('dashboard')->with('success', 'Rekam medis berhasil disimpan.');

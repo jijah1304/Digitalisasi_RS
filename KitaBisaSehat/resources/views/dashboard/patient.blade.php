@@ -21,6 +21,43 @@
         </div>
     </div>
 
+    <!-- Notifikasi untuk Pasien -->
+    @if($approvedAppointments > 0)
+        <div class="mb-6">
+            <div class="glass p-4 rounded-xl border-l-4 border-blue-400 bg-blue-50/50">
+                <div class="flex items-center gap-3">
+                    <div class="bg-blue-100 p-2 rounded-lg text-blue-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-rs-navy">Janji Temu Telah Disetujui</h3>
+                        <p class="text-sm text-rs-navy/60">Ada <span class="font-bold text-blue-600">{{ $approvedAppointments }} janji temu</span> yang telah disetujui oleh dokter.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    @if($medicineReadyAppointments > 0)
+        <div class="mb-6">
+            <div class="glass p-4 rounded-xl border-l-4 border-green-400 bg-green-50/50">
+                <div class="flex items-center gap-3">
+                    <div class="bg-green-100 p-2 rounded-lg text-green-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-rs-navy">Resep Obat Siap Diambil</h3>
+                        <p class="text-sm text-rs-navy/60">Ada <span class="font-bold text-green-600">{{ $medicineReadyAppointments }} resep obat</span> yang siap diambil sesuai rekam medis Anda.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
     <!-- Status Janji Temu Terakhir -->
     <h2 class="text-xl font-bold text-rs-navy mb-5">Riwayat & Status Janji Temu</h2>
 
@@ -67,6 +104,8 @@
                                     <span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-bold">Menunggu</span>
                                 @elseif($apt->status == 'approved')
                                     <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-bold">Disetujui</span>
+                                @elseif($apt->status == 'obat_diterima')
+                                    <span class="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-bold">Obat Siap</span>
                                 @elseif($apt->status == 'selesai')
                                     <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">Selesai</span>
                                 @else
@@ -105,15 +144,26 @@
 
                             <!-- KOLOM AKSI -->
                             <td class="p-4">
-                                @if($apt->status == 'selesai' && $apt->medicalRecord)
+                                @if($apt->status == 'obat_diterima')
+                                    <form method="POST" action="{{ route('appointments.confirm-medicine', $apt->id) }}" class="inline">
+                                        @csrf
+                                        <button type="submit" class="text-xs bg-orange-500 text-white px-3 py-1.5 rounded-lg hover:bg-orange-600 transition-colors shadow-sm font-medium inline-flex items-center gap-1">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                            </svg>
+                                            Konfirmasi Obat
+                                        </button>
+                                    </form>
+
+                                @elseif($apt->status == 'selesai' && $apt->medicalRecord)
                                     <a href="{{ route('medical_records.show', $apt->medicalRecord->id) }}" class="text-xs font-bold text-rs-teal hover:underline inline-flex items-center gap-1">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z" /><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" /></svg>
                                         Lihat Hasil
                                     </a>
-                                
+
                                 @elseif($apt->status == 'rejected')
                                     <div class="text-xs text-red-500 font-medium" title="{{ $apt->rejection_reason }}">
-                                        <span class="font-bold">Alasan:</span> 
+                                        <span class="font-bold">Alasan:</span>
                                         <span class="italic">"{{ Str::limit($apt->rejection_reason, 20) }}"</span>
                                     </div>
 

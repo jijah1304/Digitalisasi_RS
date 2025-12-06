@@ -71,12 +71,13 @@ class DashboardController extends Controller
                 ->where('status', 'pending')
                 ->count();
 
-            // 3. Pasien Terbaru yang Diperiksa (Status Selesai) - Ambil 5 Terakhir
-            // Mengambil janji temu yang statusnya selesai milik dokter ini, diurutkan dari yang terbaru
+            // 3. Pasien Terbaru yang Diperiksa (Status Menunggu Obat atau Selesai) - Ambil 5 Terakhir
+            // Mengambil janji temu yang memiliki medical record milik dokter ini, diurutkan dari yang terbaru
             $recentPatients = Appointment::with(['patient', 'medicalRecord'])
                 ->where('doctor_id', $user->id)
-                ->where('status', 'selesai')
-                ->latest('updated_at') // Urutkan berdasarkan waktu update terakhir (saat status jadi selesai)
+                ->whereHas('medicalRecord') // Pastikan ada medical record
+                ->whereIn('status', ['menunggu_pasien_ambil_obat', 'selesai']) // Status menunggu obat atau selesai
+                ->latest('updated_at') // Urutkan berdasarkan waktu update terakhir
                 ->take(5)
                 ->get();
 
@@ -87,7 +88,18 @@ class DashboardController extends Controller
         else {
             // Riwayat janji temu terakhir
             $appointments = Appointment::where('patient_id', $user->id)->latest()->get();
-            return view('dashboard.patient', compact('appointments'));
+
+            // Notifikasi untuk pasien
+            $approvedAppointments = Appointment::where('patient_id', $user->id)
+                ->where('status', 'approved')
+                ->count();
+
+            $medicineReadyAppointments = Appointment::where('patient_id', $user->id)
+                ->where('status', 'obat_diterima')
+                ->whereHas('medicalRecord')
+                ->count();
+
+            return view('dashboard.patient', compact('appointments', 'approvedAppointments', 'medicineReadyAppointments'));
         }
     }
 }
