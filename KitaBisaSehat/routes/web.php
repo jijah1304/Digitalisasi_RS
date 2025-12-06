@@ -17,6 +17,8 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/guest', [App\Http\Controllers\GuestController::class, 'index'])->name('guest.index');
+
 // 2. RUTE YANG BUTUH LOGIN (Authenticated)
 Route::middleware(['auth'])->group(function () {
     
