@@ -1,4 +1,4 @@
-<nav class="glass sticky top-0 z-50 px-6 py-4 mb-8 transition-all duration-300">
+<nav class="glass sticky top-0 z-50 px-6 py-4 mb-8 transition-all duration-300 print:hidden">
     <div class="flex items-center justify-between max-w-7xl mx-auto">
         
         <!-- BAGIAN KIRI: Logo & Menu Utama -->
