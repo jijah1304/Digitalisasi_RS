@@ -48,6 +48,7 @@ class MedicineController extends Controller
             'stock' => 'required|integer|min:0',
             'description' => 'required|string',
             'image' => 'required|string', // Image sebagai string (URL/Nama File)
+            'expiry_date' => 'required|date|after:today',
         ]);
 
         Medicine::create($request->all());
@@ -68,6 +69,7 @@ class MedicineController extends Controller
             'stock' => 'required|integer|min:0',
             'description' => 'required|string',
             'image' => 'required|string',
+            'expiry_date' => 'required|date',
         ]);
 
         $medicine->update($request->all());

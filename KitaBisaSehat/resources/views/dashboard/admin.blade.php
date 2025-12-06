@@ -59,6 +59,66 @@
         </div>
     </div>
 
+    <!-- Section Baru: Notifikasi Obat -->
+    @if($medicinesNeedingNotification->count() > 0)
+    <div class="mb-10">
+        <h2 class="text-xl font-bold text-rs-navy mb-4 flex items-center gap-2">
+            <span class="w-3 h-3 bg-red-500 rounded-full animate-pulse"></span>
+            Notifikasi Obat ({{ $medicinesNeedingNotification->count() }} item)
+        </h2>
+
+        <div class="glass rounded-3xl overflow-hidden shadow-sm border-l-4 border-red-400">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-red-50 text-rs-navy text-sm uppercase tracking-wider">
+                        <tr>
+                            <th class="p-4 font-semibold">Nama Obat</th>
+                            <th class="p-4 font-semibold">Stok</th>
+                            <th class="p-4 font-semibold">Tanggal Kadaluarsa</th>
+                            <th class="p-4 font-semibold">Status</th>
+                            <th class="p-4 font-semibold">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        @foreach($medicinesNeedingNotification as $medicine)
+                            <tr class="hover:bg-red-50/50 transition-colors">
+                                <td class="p-4">
+                                    <div class="font-bold text-rs-navy">{{ $medicine->name }}</div>
+                                    <div class="text-xs text-rs-navy/60">{{ $medicine->description }}</div>
+                                </td>
+                                <td class="p-4">
+                                    <span class="px-3 py-1 {{ $medicine->stock <= 20 ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700' }} rounded-full text-xs font-bold">
+                                        {{ $medicine->stock }} unit
+                                    </span>
+                                </td>
+                                <td class="p-4 text-sm font-mono text-rs-navy">
+                                    @if($medicine->expiry_date)
+                                        {{ \Carbon\Carbon::parse($medicine->expiry_date)->translatedFormat('d M Y') }}
+                                    @else
+                                        <span class="text-gray-400">-</span>
+                                    @endif
+                                </td>
+                                <td class="p-4">
+                                    @if($medicine->stock <= 20)
+                                        <span class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold">Stok Rendah</span>
+                                    @elseif($medicine->expiry_date && $medicine->expiry_date <= now()->addDays(30))
+                                        <span class="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-bold">Mendekati Kedaluwarsa</span>
+                                    @endif
+                                </td>
+                                <td class="p-4">
+                                    <a href="{{ route('medicines.edit', $medicine->id) }}" class="text-xs font-bold text-rs-teal hover:underline">
+                                        Edit Obat
+                                    </a>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    @endif
+
     <!-- Section Baru: Dokter Bertugas Hari Ini -->
     <div class="mb-10">
         <h2 class="text-xl font-bold text-rs-navy mb-4 flex items-center gap-2">

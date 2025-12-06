@@ -58,6 +58,13 @@
                 </div>
             </div>
 
+            <!-- Tanggal Kadaluarsa -->
+            <div>
+                <label class="block text-sm font-bold text-rs-navy mb-2 ml-1">Tanggal Kedaluwarsa</label>
+                <input type="date" name="expiry_date" value="{{ old('expiry_date', $medicine->expiry_date ? \Carbon\Carbon::parse($medicine->expiry_date)->format('Y-m-d') : '') }}" class="w-full px-4 py-3 rounded-xl bg-white/50 border border-white/60 focus:border-rs-teal focus:ring-2 focus:ring-rs-teal/20 outline-none transition-all text-rs-navy" required>
+                <p class="text-xs text-rs-navy/50 mt-1 ml-1">*Pilih tanggal kadaluarsa obat untuk notifikasi otomatis.</p>
+            </div>
+
             <!-- Deskripsi -->
             <div>
                 <label class="block text-sm font-bold text-rs-navy mb-2 ml-1">Deskripsi / Kegunaan</label>
