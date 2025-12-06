@@ -57,12 +57,13 @@ class AppointmentController extends Controller
                 ->withErrors(['date' => "Dokter ini hanya praktik pada hari {$schedule->day}, sedangkan tanggal yang Anda pilih adalah hari $translatedDay."]);
         }
 
-        // --- VALIDASI 2: CEK KETERSEDIAAN SLOT (BARU) ---
+        // --- VALIDASI 2: CEK KETERSEDIAAN SLOT ---
         // Mencegah pasien lain membooking slot yang sama di tanggal yang sama
+        // Termasuk yang sudah selesai (selesai) untuk mencegah double booking
         $isBooked = Appointment::where('doctor_id', $request->doctor_id)
             ->where('schedule_id', $request->schedule_id)
             ->where('date', $request->date)
-            ->whereIn('status', ['pending', 'approved']) // Hanya cek yang aktif
+            ->whereNotIn('status', ['rejected']) // Kecuali yang ditolak
             ->exists();
         if ($isBooked) {
             return back()
@@ -121,7 +122,24 @@ class AppointmentController extends Controller
         return back()->with('success', 'Status janji temu diperbarui.');
     }
 
-    // 3. FITUR FEEDBACK SYSTEM (PASIEN)
+    // 3. FITUR KONFIRMASI OBAT (PASIEN)
+    // Konfirmasi Obat Sudah Diambil
+    public function confirmMedicinePickup(Appointment $appointment)
+    {
+        // 1. Validasi Kepemilikan (Security)
+        if ($appointment->patient_id !== Auth::id()) {
+            abort(403, 'Anda tidak berhak mengkonfirmasi obat untuk janji temu ini.');
+        }
+        // 2. Validasi Status (Harus obat_diterima)
+        if ($appointment->status !== 'obat_diterima') {
+            return back()->with('error', 'Konfirmasi obat hanya bisa dilakukan setelah resep obat siap diambil.');
+        }
+        // 3. Update Status ke Selesai
+        $appointment->update(['status' => 'selesai']);
+        return back()->with('success', 'Terima kasih telah mengkonfirmasi pengambilan obat. Kunjungan telah selesai.');
+    }
+
+    // 4. FITUR FEEDBACK SYSTEM (PASIEN)
     // Simpan Rating & Ulasan
     public function storeFeedback(Request $request, Appointment $appointment)
     {
@@ -129,9 +147,9 @@ class AppointmentController extends Controller
         if ($appointment->patient_id !== Auth::id()) {
             abort(403, 'Anda tidak berhak memberikan ulasan untuk janji temu ini.');
         }
-        // 2. Validasi Status (Harus Selesai)
+        // 2. Validasi Status (Harus Selesai dan Obat Sudah Dikonfirmasi)
         if ($appointment->status !== 'selesai') {
-            return back()->with('error', 'Feedback hanya bisa diberikan setelah kunjungan selesai.');
+            return back()->with('error', 'Feedback hanya bisa diberikan setelah mengkonfirmasi pengambilan obat.');
         }
         // 3. Validasi Duplikasi (Cek apakah sudah pernah rating)
         if ($appointment->rating != null) {
