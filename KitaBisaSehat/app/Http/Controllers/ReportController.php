@@ -15,12 +15,15 @@ class ReportController extends Controller
     public function index()
     {
         // 1. LAPORAN PASIEN PER POLI
-        // Menghitung jumlah pasien (appointment selesai) berdasarkan poli dokter
-        $patientsPerPoli = Poli::withCount(['doctors as total_patients' => function($query) {
-            $query->whereHas('doctorAppointments', function($q) {
-                $q->where('status', 'selesai');
-            });
-        }])->get();
+        // Menghitung jumlah pasien yang ditangani (rekam medis dibuat) hari ini per poli
+        $patientsPerPoli = DB::table('polis')
+            ->select('polis.id', 'polis.name', DB::raw('COUNT(DISTINCT appointments.patient_id) as total_patients'))
+            ->join('users as doctors', 'polis.id', '=', 'doctors.poli_id')
+            ->join('appointments', 'doctors.id', '=', 'appointments.doctor_id')
+            ->join('medical_records', 'appointments.id', '=', 'medical_records.appointment_id')
+            ->whereDate('medical_records.created_at', Carbon::today())
+            ->groupBy('polis.id', 'polis.name')
+            ->get();
 
         // 2. LAPORAN KINERJA DOKTER
         // Mengurutkan dokter berdasarkan jumlah pasien yang SUDAH diperiksa (status: selesai)
