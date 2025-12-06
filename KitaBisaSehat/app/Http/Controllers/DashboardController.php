@@ -26,7 +26,7 @@ class DashboardController extends Controller
             // 2. Daftar Dokter Bertugas HARI INI
             // Ambil nama hari ini dalam Bahasa Inggris (Monday, Tuesday...)
             $todayEnglish = Carbon::now()->format('l');
-            
+
             // Translate ke Bahasa Indonesia (Sesuai database jadwal)
             $dayMap = [
                 'Sunday' => 'Minggu', 'Monday' => 'Senin', 'Tuesday' => 'Selasa',
@@ -44,13 +44,17 @@ class DashboardController extends Controller
                 }])
                 ->get();
 
+            // 3. Notifikasi Obat
+            $medicinesNeedingNotification = Medicine::getMedicinesNeedingNotification();
+
             return view('dashboard.admin', compact(
-                'totalPatients', 
-                'totalDoctors', 
-                'totalMedicines', 
+                'totalPatients',
+                'totalDoctors',
+                'totalMedicines',
                 'pendingAppointments',
                 'doctorsOnDuty',
-                'todayIndo'
+                'todayIndo',
+                'medicinesNeedingNotification'
             ));
         } 
         

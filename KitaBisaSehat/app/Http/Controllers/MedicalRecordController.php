@@ -64,6 +64,23 @@ class MedicalRecordController extends Controller
     public function show($id)
     {
         $medicalRecord = MedicalRecord::with(['appointment.patient', 'appointment.doctor', 'medicines'])->findOrFail($id);
+
+        // Access control: Admin, Doctor (who created), or Patient (own record)
+        if (Auth::user()->role === 'admin') {
+            // Admin can view all
+        } elseif (Auth::user()->role === 'dokter' && $medicalRecord->appointment->doctor_id === Auth::id()) {
+            // Doctor can view their own patients' records
+        } elseif (Auth::user()->role === 'pasien' && $medicalRecord->appointment->patient_id === Auth::id()) {
+            // Patient can view their own records
+        } else {
+            abort(403, 'Anda tidak memiliki akses.');
+        }
+
+        // Pastikan appointment selesai (untuk pasien melihat hasil)
+        if (Auth::user()->role === 'pasien' && $medicalRecord->appointment->status !== 'selesai') {
+            abort(403, 'Rekam medis belum selesai diproses.');
+        }
+
         return view('medical_records.show', compact('medicalRecord'));
     }
 
