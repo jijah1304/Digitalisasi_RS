@@ -4,7 +4,6 @@
 <div class="relative w-full h-screen overflow-hidden flex flex-col lg:flex-row bg-rs-pale">
 
     <div class="w-full lg:w-1/2 h-full flex flex-col justify-between px-6 lg:px-16 py-6 lg:py-8 relative z-20">
-        
         <nav class="flex items-center gap-3 shrink-0">
             <div class="w-10 h-10 bg-rs-green rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg">
                 K
@@ -13,7 +12,6 @@
         </nav>
 
         <div class="flex flex-col justify-center flex-grow py-4">
-            
             <div>
                 <span class="inline-block py-1.5 px-4 rounded-full bg-rs-teal/10 text-rs-teal text-xs lg:text-sm font-semibold mb-6 border border-rs-teal/20">
                     Digitalisasi Layanan Kesehatan
@@ -46,6 +44,10 @@
                                 Daftar Pasien
                             </a>
                         @endif
+
+                        <a href="{{ route('guest.index') }}" class="px-6 py-3 glass text-rs-navy rounded-xl font-semibold hover:bg-white/60 transition-all duration-300 border border-rs-navy/10">
+                            Lihat Layanan
+                        </a>
                     @endauth
                 @endif
             </div>
@@ -68,27 +70,10 @@
     </div>
 
     <div class="hidden lg:block lg:w-1/2 h-full relative">
-        <img src="https://images.unsplash.com/photo-1538108149393-fbbd81895907?q=80&w=2828&auto=format&fit=crop" 
+        <img src="https://www.tagmedstaffing.com/wp-content/uploads/2023/12/shutterstock_786971899-scaled.jpg" 
              class="absolute inset-0 w-full h-full object-cover rounded-l-[3rem]" 
-             alt="Hospital Building">
-        
+             alt="Hospital">
         <div class="absolute inset-0 bg-gradient-to-t from-rs-navy/90 via-rs-navy/20 to-transparent rounded-l-[3rem]"></div>
-
-        <div class="absolute bottom-16 left-12 right-24 glass-dark p-5 rounded-2xl text-white shadow-2xl backdrop-blur-md border border-white/10 animate-fade-in-up">
-            <div class="flex items-center gap-4">
-                <div class="w-14 h-14 rounded-full bg-rs-mint overflow-hidden border-2 border-white shrink-0">
-                    <img src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&q=80&w=200&h=200" class="w-full h-full object-cover">
-                </div>
-                <div>
-                    <h3 class="font-semibold text-lg leading-tight">drg. Nursyamsi</h3>
-                    <p class="text-rs-mint text-sm">Spesialis Poli Gigi</p>
-                    <div class="mt-2 flex items-center gap-2 bg-white/10 px-2 py-1 rounded w-fit">
-                        <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-                        <span class="text-[10px] font-medium tracking-wide">SEDANG PRAKTIK</span>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 </div>
 @endsection
