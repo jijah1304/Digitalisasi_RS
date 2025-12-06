@@ -74,7 +74,7 @@
                         <tr>
                             <th class="p-4 font-semibold">Nama Obat</th>
                             <th class="p-4 font-semibold">Stok</th>
-                            <th class="p-4 font-semibold">Tanggal Kadaluarsa</th>
+                            <th class="p-4 font-semibold">Tanggal Kedaluwarsa</th>
                             <th class="p-4 font-semibold">Status</th>
                             <th class="p-4 font-semibold">Aksi</th>
                         </tr>
@@ -167,6 +167,68 @@
                             <tr>
                                 <td colspan="4" class="p-8 text-center text-rs-navy/50 italic">
                                     Tidak ada dokter yang memiliki jadwal hari ini.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section Baru: Feedback Pasien Terbaru -->
+    <div class="mb-10">
+        <h2 class="text-xl font-bold text-rs-navy mb-4 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-500" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            Feedback Pasien Terbaru
+        </h2>
+
+        <div class="glass rounded-3xl overflow-hidden shadow-sm">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-white/40 text-rs-navy text-sm uppercase tracking-wider">
+                        <tr>
+                            <th class="p-5 font-semibold">Tanggal</th>
+                            <th class="p-5 font-semibold">Pasien</th>
+                            <th class="p-5 font-semibold">Dokter</th>
+                            <th class="p-5 font-semibold">Rating</th>
+                            <th class="p-5 font-semibold">Ulasan</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        @forelse(\App\Models\Appointment::with(['patient', 'doctor'])->whereNotNull('rating')->latest()->take(5)->get() as $feedback)
+                            <tr class="hover:bg-white/30 transition-colors">
+                                <td class="p-5 text-sm font-medium text-rs-navy">
+                                    {{ \Carbon\Carbon::parse($feedback->updated_at)->translatedFormat('d M Y') }}
+                                    <div class="text-xs text-rs-navy/50">{{ \Carbon\Carbon::parse($feedback->updated_at)->format('H:i') }}</div>
+                                </td>
+
+                                <td class="p-5">
+                                    <div class="font-bold text-rs-navy">{{ $feedback->patient->name }}</div>
+                                    <div class="text-xs text-rs-navy/50">{{ $feedback->patient->email }}</div>
+                                </td>
+
+                                <td class="p-5">
+                                    <div class="font-bold text-rs-navy">{{ $feedback->doctor->name }}</div>
+                                    <div class="text-xs text-rs-teal">{{ $feedback->doctor->poli->name ?? 'Umum' }}</div>
+                                </td>
+
+                                <td class="p-5">
+                                    <div class="flex text-yellow-400 text-sm">
+                                        @for($i=0; $i<$feedback->rating; $i++) ★ @endfor
+                                        @for($i=$feedback->rating; $i<5; $i++) <span class="text-gray-300">★</span> @endfor
+                                    </div>
+                                    <div class="text-xs font-bold text-rs-navy mt-1">{{ $feedback->rating }}.0</div>
+                                </td>
+
+                                <td class="p-5 text-sm text-rs-navy/80 italic max-w-xs">
+                                    {{ Str::limit($feedback->feedback ?? '-', 80) }}
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="p-8 text-center text-rs-navy/50 italic">
+                                    Belum ada feedback dari pasien.
                                 </td>
                             </tr>
                         @endforelse
