@@ -40,6 +40,9 @@ Route::middleware(['auth'])->group(function () {
 
         // Laporan Analitik
         Route::get('/reports', [ReportController::class, 'index'])->name('admin.reports.index');
+
+        // Feedback Management
+        Route::get('/feedback', [ReportController::class, 'feedback'])->name('admin.feedback.index');
     });
 
     // AREA DOKTER
@@ -81,6 +84,14 @@ Route::middleware(['auth'])->group(function () {
         // Medicine Confirmation
         Route::post('/appointments/{appointment}/confirm-medicine', [AppointmentController::class, 'confirmMedicinePickup'])
             ->name('appointments.confirm-medicine');
+
+        // Patient Medical Records
+        Route::get('/medical-records', [MedicalRecordController::class, 'patientIndex'])
+            ->name('patient.medical-records');
+
+        // Patient Prescriptions
+        Route::get('/prescriptions', [MedicalRecordController::class, 'patientPrescriptions'])
+            ->name('patient.prescriptions');
     });
     
     // --- PROFILE USER ---

@@ -172,4 +172,36 @@ class MedicalRecordController extends Controller
             return back()->with('error', 'Gagal hapus: ' . $e->getMessage());
         }
     }
+
+    public function patientIndex()
+    {
+        $patient = auth()->user();
+
+        // Get all medical records for the current patient
+        $medicalRecords = MedicalRecord::with(['appointment.doctor.poli', 'medicines'])
+            ->whereHas('appointment', function($query) use ($patient) {
+                $query->where('patient_id', $patient->id)
+                      ->where('status', 'selesai');
+            })
+            ->latest()
+            ->paginate(10);
+
+        return view('patient.medical_records.index', compact('medicalRecords'));
+    }
+
+    public function patientPrescriptions()
+    {
+        $patient = auth()->user();
+
+        // Get all prescriptions for the current patient
+        $prescriptions = MedicalRecord::with(['appointment.doctor.poli', 'medicines'])
+            ->whereHas('appointment', function($query) use ($patient) {
+                $query->where('patient_id', $patient->id)
+                      ->where('status', 'selesai');
+            })
+            ->latest()
+            ->paginate(10);
+
+        return view('patient.prescriptions.index', compact('prescriptions'));
+    }
 }

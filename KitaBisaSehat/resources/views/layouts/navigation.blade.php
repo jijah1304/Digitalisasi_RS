@@ -34,6 +34,9 @@
                     <a href="{{ route('admin.reports.index') }}" class="text-sm font-medium {{ request()->routeIs('admin.reports.*') ? 'text-rs-green font-bold' : 'text-rs-navy/70 hover:text-rs-teal' }} transition-colors">
                         Laporan
                     </a>
+                    <a href="{{ route('admin.feedback.index') }}" class="text-sm font-medium {{ request()->routeIs('admin.feedback.*') ? 'text-rs-green font-bold' : 'text-rs-navy/70 hover:text-rs-teal' }} transition-colors">
+                        Feedback
+                    </a>
                 
                 <!-- MENU KHUSUS DOKTER -->
                 @elseif(Auth::user()->role === 'dokter')
@@ -48,6 +51,12 @@
                 @elseif(Auth::user()->role === 'pasien')
                     <a href="{{ route('appointments.create') }}" class="text-sm font-medium {{ request()->routeIs('appointments.create') ? 'text-rs-green font-bold' : 'text-rs-navy/70 hover:text-rs-teal' }} transition-colors">
                         Buat Janji
+                    </a>
+                    <a href="{{ route('patient.medical-records') }}" class="text-sm font-medium {{ request()->routeIs('patient.medical-records') ? 'text-rs-green font-bold' : 'text-rs-navy/70 hover:text-rs-teal' }} transition-colors">
+                        Rekam Medis
+                    </a>
+                    <a href="{{ route('patient.prescriptions') }}" class="text-sm font-medium {{ request()->routeIs('patient.prescriptions') ? 'text-rs-green font-bold' : 'text-rs-navy/70 hover:text-rs-teal' }} transition-colors">
+                        Resep Obat
                     </a>
                 @endif
             </div>

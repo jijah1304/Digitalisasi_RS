@@ -50,10 +50,30 @@ class ReportController extends Controller
         $totalMedicineItemsOut = $medicineUsageToday->sum('total_usage');
 
         return view('admin.reports.index', compact(
-            'patientsPerPoli', 
-            'doctorPerformance', 
+            'patientsPerPoli',
+            'doctorPerformance',
             'medicineUsageToday',
             'totalMedicineItemsOut'
         ));
+    }
+
+    public function feedback()
+    {
+        // Get all feedback with ratings, paginated
+        $feedbacks = Appointment::with(['patient', 'doctor.poli'])
+            ->whereNotNull('rating')
+            ->latest()
+            ->paginate(20);
+
+        // Calculate average rating
+        $averageRating = Appointment::whereNotNull('rating')->avg('rating') ?? 0;
+
+        // Calculate rating distribution
+        $ratingCounts = [];
+        for ($i = 1; $i <= 5; $i++) {
+            $ratingCounts[$i] = Appointment::where('rating', $i)->count();
+        }
+
+        return view('admin.feedback.index', compact('feedbacks', 'averageRating', 'ratingCounts'));
     }
 }
