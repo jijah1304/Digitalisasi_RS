@@ -90,6 +90,39 @@ class UserController extends Controller
         return redirect()->route('admin.users.index')->with('success', 'User berhasil ditambahkan.');
     }
 
+    // Form Edit User
+    public function edit(User $user)
+    {
+        $polis = Poli::all();
+        return view('admin.users.edit', compact('user', 'polis'));
+    }
+
+    // Update User
+    public function update(Request $request, User $user)
+    {
+        $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email,'.$user->id],
+            'password' => ['nullable', 'confirmed', Rules\Password::defaults()],
+            'role' => ['required', 'in:admin,dokter,pasien'],
+            'poli_id' => ['nullable', 'required_if:role,dokter', 'exists:polis,id'],
+        ]);
+
+        $user->update([
+            'name' => $request->name,
+            'email' => $request->email,
+            'role' => $request->role,
+            'poli_id' => $request->role === 'dokter' ? $request->poli_id : null,
+        ]);
+
+        // Update password jika diisi
+        if ($request->filled('password')) {
+            $user->update(['password' => Hash::make($request->password)]);
+        }
+
+        return redirect()->route('admin.users.index')->with('success', 'User berhasil diperbarui.');
+    }
+
     // Hapus User (FITUR BARU)
     public function destroy(User $user)
     {
