@@ -76,6 +76,9 @@
                                 @else
                                     <div class="font-bold text-rs-navy">{{ $apt->patient->name }}</div>
                                     <div class="text-xs text-rs-navy/60">{{ $apt->patient->email }}</div>
+                                    <div class="text-xs text-rs-teal font-medium mt-1">
+                                        Dokter: {{ $apt->doctor->name }} ({{ $apt->doctor->poli->name ?? 'Umum' }})
+                                    </div>
                                 @endif
                             </td>
 
